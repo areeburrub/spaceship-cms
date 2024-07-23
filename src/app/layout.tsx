@@ -5,8 +5,12 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://spaceship-cms.co'),
   title: "Spaceship CMS",
   description: "Spaceship CMS is a content management system for Astro websites with seamless GitHub integration. Users can create accounts, link repositories, and manage content via a markdown editor. Updates are synchronized in real-time using the GitHub API, supporting collaborative projects with multiple editors. Simplify content management with Spaceship CMS.",
+  openGraph:{
+    images : ['/OG-Image.png']
+  },
   icons: {
     icon: [
       {
