@@ -31,7 +31,7 @@ export default function Home() {
             </section>
 
             <section id={"about"} className={"container max-w-screen-xl grid grid-cols-1 lg:grid-cols-2 gap-6"}>
-                <img src={"/about-img.png"} className={"rounded-lg border-2 border-secondary object-cover h-full"}/>
+                <img src={"/About-img.png"} className={"rounded-lg border-2 border-secondary object-cover h-full"}/>
                 <div>
                     <h2 className={"text-3xl md:text-5xl font-bold leading-tight"}>
                         <span className={'text-orange-500'}>About</span> Spaceship CMS
