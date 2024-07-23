@@ -1,36 +1,53 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Spaceship CMS (Work in Progress) 
+![](./public/OG-Image.png)
 
-## Getting Started
+Spaceship CMS is designed to simplify MDX content management for Astro websites. By integrating directly with GitHub repositories, Spaceship CMS offers a user-friendly interface and powerful features to streamline content creation, editing, and publishing.
 
-First, run the development server:
+## Features (_under development_)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- **GitHub Integration:** Seamlessly connect to your GitHub repositories.
+- **Markdown Support:** Effortlessly manage MDX content.
+- **Editor Collaboration:** Facilitate collaboration with multiple editors.
+- **User-friendly Interface:** Experience a smooth and intuitive workflow.
+- **Project Elevation:** Take your web projects to new heights.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## How it will Work
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. **Connect GitHub:** Link your GitHub account and select the repository for your Astro website.
+2. **Create Content:** Use our intuitive markdown editor to create and edit MDX files effortlessly.
+3. **Collaborate:** Add editors to your project for seamless collaboration and content management.
+4. **Publish:** Commit and push changes directly from the editor to your GitHub repository for instant updates.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+## Installation
 
-## Learn More
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/areeburrub/spaceship-cms.git
+    ```
+2. Navigate to the project directory:
+    ```sh
+    cd spaceship-cms
+    ```
+3. Install dependencies:
+    ```sh
+    npm install -g pnpm 
+    pnpm install
+    ```
+4. Start the development server:
+    ```sh
+    pnpm run dev
+    ```
 
-To learn more about Next.js, take a look at the following resources:
+## Contributing
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+I welcome contributions to Spaceship CMS! If you have any suggestions, bug reports, or would like to contribute code, please email me at [contact@areeburrub.dev](mailto:contact@areeburrub.dev).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
+This project is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+See the [LICENSE](LICENSE.md) file for details.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Contact
+
+For any questions or inquiries, please contact me at [contact@areeburrub.dev](mailto:contact@areeburrub.dev).
