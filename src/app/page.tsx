@@ -5,6 +5,7 @@ import {Input} from "@/components/ui/input";
 
 import { Github, FileText, Users, Layout, Rocket } from 'lucide-react';
 import Footer from "@/app/components/Footer";
+import {WaitingListForm} from "@/app/components/waitingListForm";
 
 export default function Home() {
     return (
@@ -21,9 +22,8 @@ export default function Home() {
                 <p className={'text-center max-w-screen-lg text-base md:text-xl'} data-aos="fade-up">
                     Spaceship CMS streamlines content management for Astro websites. Connect your GitHub, edit markdown files easily, and publish with a single click. Simplify your workflow today.
                 </p>
-                <div className={"flex gap-2 items-center max-w-xl"}>
-                    <Input placeholder={"Enter your Email"} type={"email"}/>
-                    <Button>Join the Waitlist</Button>
+                <div className={"max-w-xl"}>
+                    <WaitingListForm/>
                 </div>
                 {/*<div className={"max-w-screen-xl w-full flex items-center justify-center"}>*/}
                 {/*    <img src={"https://unsplash.it/1920/1080"} className={"rounded-lg border-2 border-secondary h-full"}/>*/}
