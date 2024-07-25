@@ -32,6 +32,7 @@ export async function sendEmail({emails, content, subject}: sendEmailProps) {
         return data;
 
     } catch (error) {
+        console.error("Sending email failed", error);
         throw error;
     }
 }
