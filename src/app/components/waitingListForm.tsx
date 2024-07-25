@@ -22,82 +22,163 @@ import {LoaderCircle} from "lucide-react";
 import {ToastAction} from "@/components/ui/toast";
 import {Link} from "@react-email/components";
 
+import { useRef, useState } from "react";
+import { Turnstile } from "@marsidev/react-turnstile";
+import theme from "tailwindcss/defaultTheme";
+import {verifyCaptchaAction} from "@/_actions/verifyCaptcha";
+
 const waitingListFormSchema = z.object({
     email: z.string().email(),
+    captchaToken : z.string()
 })
 
 export const WaitingListForm = () => {
+
+
     const {isPending, execute, data, error} = useServerAction(addToWaitingList)
+
     const {toast} = useToast()
 
     const form = useForm<z.infer<typeof waitingListFormSchema>>({
         resolver: zodResolver(waitingListFormSchema),
         defaultValues: {
             email: "",
+            captchaToken: ""
         },
     })
 
+    const turnstileRef = useRef(null);
+    const [captchaToken, setCaptchaToken] = useState("");
+
+    function resetCaptcha() {
+        if (turnstileRef.current) {
+            // @ts-ignore
+            turnstileRef.current?.reset();
+        }
+    }
+
+    function onExpire() {
+        form.setValue('captchaToken','')
+        // @ts-ignore
+        turnstileRef.current?.reset();
+    }
+
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof waitingListFormSchema>) {
-        // @ts-ignore
-        const [data, err] = await execute(values)
 
-        if (err) {
+        console.log(values)
+        if(values.captchaToken === ""){
             toast({
                 variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: "There was a problem with the request.",
+                title: "Unusual behavior detected ⚠",
+                description: "Please verify that you are not a robot",
             })
+
+            return
         }
 
-        if (data?.exist && data != null) {
-            toast({
-                title: "You are already on the Waitlist",
-                description: `Follow me on 𝕏 (twitter) @areeburub for more updates`,
-                action: <Link href={"https://x.com/intent/follow?screen_name=areeburrub"} target={"_blank"}><ToastAction
-                    altText="Follow">Follow</ToastAction></Link>
-            })
-        }
+        const [isCaptchaValid, captchaError] = await verifyCaptchaAction({token:values.captchaToken})
 
-        if (!data?.exist && data != null) {
+
+        console.log(isCaptchaValid, captchaError);
+
+        if (isCaptchaValid) {
+            // @ts-ignore
+            const [data, err] = await execute(values)
+
+            if (err) {
+                toast({
+                    variant: "destructive",
+                    title: "Uh oh! Something went wrong.",
+                    description: "There was a problem with the request.",
+                })
+            }
+
+            if (data?.exist && data != null) {
+                toast({
+                    title: "You are already on the Waitlist",
+                    description: `Follow me on 𝕏 (twitter) @areeburub for more updates`,
+                    action: <Link href={"https://x.com/intent/follow?screen_name=areeburrub"}
+                                  target={"_blank"}><ToastAction
+                        altText="Follow">Follow</ToastAction></Link>
+                })
+            }
+
+            if (!data?.exist && data != null) {
+                toast({
+                    title: "You are added to the Waitlist",
+                    description: `Follow me on 𝕏 @areeburub for more updates`,
+                    action: <Link href={"https://x.com/intent/follow?screen_name=areeburrub"}
+                                  target={"_blank"}><ToastAction
+                        altText="Follow">Follow</ToastAction></Link>
+                })
+            }
+        }else{
             toast({
-                title: "You are added to the Waitlist",
-                description: `Follow me on 𝕏 @areeburub for more updates`,
-                action: <Link href={"https://x.com/intent/follow?screen_name=areeburrub"} target={"_blank"}><ToastAction
-                    altText="Follow">Follow</ToastAction></Link>
+                variant: "destructive",
+                title: "Failed to Verify Captcha",
+                description: "Try reloading the page.",
             })
         }
-        console.log({values, data, err})
     }
 
 
     return (
         <Form {...form}>
             <form
-                className="flex gap-2 items-start"
+                className="flex flex-col gap-4 items-center"
                 onSubmit={form.handleSubmit(onSubmit)}
+                // @ts-ignore
+                onFocus={()=>{turnstileRef.current?.execute()}}
             >
+                <div className="flex gap-2 items-start">
+                    <FormField
+                        control={form.control}
+                        name="email"
+                        render={({field}) => (
+                            <FormItem>
+                                <FormControl>
+                                    <Input placeholder={"Enter your Email"} {...field} />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+                    <Button type="submit" className={"flex items-center gap-2"}>
+                        Join Waitlist
+                        <span>
+                            {
+                                isPending &&
+                                <LoaderCircle className={"animate-spin"}/>
+                            }
+                        </span>
+                    </Button>
+                </div>
                 <FormField
                     control={form.control}
-                    name="email"
+                    name="captchaToken"
                     render={({field}) => (
-                        <FormItem>
-                            <FormControl>
-                                <Input placeholder={"Enter your Email"} {...field} />
-                            </FormControl>
-                        </FormItem>
+                        <Turnstile
+                            {...field}
+                            className={"m-0 w-full"}
+                            ref={turnstileRef}
+                            siteKey={"0x4AAAAAAAf2YNG77W0hu5xp"}
+                            onSuccess={(token: any) => {
+                                form.setValue("captchaToken",token)
+                            }}
+                            // @ts-ignore
+                            onError={(error: any) => toast({variant: "destructive", title: "Captcha Error", description: error.message})}
+                            onExpire={onExpire}
+                            options={{
+                                refreshExpired: "auto",
+                                appearance: "interaction-only",
+                                theme: "light",
+                                execution: "execute"
+                            }}
+                        />
                     )}
+
                 />
-                <Button type="submit" className={"flex items-center gap-2"}>
-                    Join Waitlist
-                    <span>
-                        {
-                            isPending &&
-                            <LoaderCircle className={"animate-spin"}/>
-                        }
-                    </span>
-                </Button>
             </form>
         </Form>
-    )
+)
 }
