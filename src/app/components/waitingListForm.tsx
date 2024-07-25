@@ -27,8 +27,8 @@ const waitingListFormSchema = z.object({
 })
 
 export const WaitingListForm = () => {
-    const { isPending, execute, data, error } = useServerAction(addToWaitingList)
-    const { toast } = useToast()
+    const {isPending, execute, data, error} = useServerAction(addToWaitingList)
+    const {toast} = useToast()
 
     const form = useForm<z.infer<typeof waitingListFormSchema>>({
         resolver: zodResolver(waitingListFormSchema),
@@ -54,19 +54,22 @@ export const WaitingListForm = () => {
             toast({
                 title: "You are already on the Waitlist",
                 description: `Follow me on 𝕏 (twitter) @areeburub for more updates`,
-                action: <Link href={"https://x.com/areeburrub"} target={"_blank"}><ToastAction altText="Follow">Follow</ToastAction></Link>
+                action: <Link href={"https://x.com/intent/follow?screen_name=areeburrub"} target={"_blank"}><ToastAction
+                    altText="Follow">Follow</ToastAction></Link>
             })
         }
 
-        if (!data?.exist && data != null){
+        if (!data?.exist && data != null) {
             toast({
                 title: "You are added to the Waitlist",
                 description: `Follow me on 𝕏 @areeburub for more updates`,
-                action: <Link href={"https://x.com/areeburrub"} target={"_blank"}><ToastAction altText="Follow">Follow</ToastAction></Link>
+                action: <Link href={"https://x.com/intent/follow?screen_name=areeburrub"} target={"_blank"}><ToastAction
+                    altText="Follow">Follow</ToastAction></Link>
             })
         }
         console.log({values, data, err})
     }
+
 
     return (
         <Form {...form}>
@@ -90,7 +93,7 @@ export const WaitingListForm = () => {
                     <span>
                         {
                             isPending &&
-                            <LoaderCircle className={"animate-spin"} />
+                            <LoaderCircle className={"animate-spin"}/>
                         }
                     </span>
                 </Button>
