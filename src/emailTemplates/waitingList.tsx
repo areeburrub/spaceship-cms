@@ -42,7 +42,7 @@ const WaitingListEmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
                         <Hr/>
                         <h1 className="text-2xl font-bold text-gray-900">You are added to the Waitlist</h1>
                         <p className="mt-4 text-gray-700">
-                            I am excited to have you onboard as I continue developing this project. I'm working hard to
+                            I am excited to have you onboard as I continue developing this project. I&apos;m working hard to
                             ensure Spaceship CMS makes managing content for Astro website a lot easier.
                         </p>
 
