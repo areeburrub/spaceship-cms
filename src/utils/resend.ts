@@ -31,11 +31,9 @@ export const sendEmail = createServerAction()
                 react: content,
             });
 
-            console.log("Email sent successfully", data);
             return data;
 
         } catch (error) {
-            console.error("Sending email failed", error);
             throw error;
         }
     });
