@@ -31,7 +31,7 @@ export const addToWaitingList = createServerAction()
                 }
             })
 
-            const emailToVisitor = sendEmail({
+            const emailToVisitor = await sendEmail({
                 emails : [input.email],
                 subject : "Added to the Waitlist - Spaceship CMS",
                 content : WaitingListEmailTemplate({email:input.email})
