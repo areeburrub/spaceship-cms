@@ -23,12 +23,15 @@ export async function sendEmail({emails, content, subject}: sendEmailProps) {
         });
 
         if (error) {
+            console.error("Sending email failed", error);
             return error;
         }
+
+        console.log("Sending email", data);
 
         return data;
 
     } catch (error) {
-        return error;
+        throw error;
     }
 }

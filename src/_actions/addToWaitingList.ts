@@ -40,6 +40,8 @@ export const addToWaitingList = createServerAction()
                 content : WaitingListEmailTemplate({email:input.email})
             })
 
+            console.log({doesExist, waitingListEntry, emailToVisitor})
+
             return {exist:false, email: input.email}
         }
         catch (err:any){
