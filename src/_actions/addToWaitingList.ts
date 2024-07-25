@@ -11,10 +11,7 @@ export const addToWaitingList = createServerAction()
     .input(
         z.object({
             email: z.string().email(),
-        }),
-        {
-            type: "formData",
-        }
+        })
     )
     .handler(async ({ input }) => {
 
