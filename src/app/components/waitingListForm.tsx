@@ -24,8 +24,6 @@ import {Link} from "@react-email/components";
 
 import { useRef, useState } from "react";
 import { Turnstile } from "@marsidev/react-turnstile";
-import theme from "tailwindcss/defaultTheme";
-import {verifyCaptchaAction} from "@/_actions/verifyCaptcha";
 
 const waitingListFormSchema = z.object({
     email: z.string().email(),
@@ -66,32 +64,28 @@ export const WaitingListForm = () => {
     // 2. Define a submit handler.
     async function onSubmit(values: z.infer<typeof waitingListFormSchema>) {
 
-        console.log(values)
-        if(values.captchaToken === ""){
-            toast({
-                variant: "destructive",
-                title: "Unusual behavior detected ⚠",
-                description: "Please verify that you are not a robot",
-            })
-
-            return
-        }
-
-        const [isCaptchaValid, captchaError] = await verifyCaptchaAction({token:values.captchaToken})
 
 
-        console.log(isCaptchaValid, captchaError);
-
-        if (isCaptchaValid) {
+        if (values.captchaToken !== "") {
             // @ts-ignore
             const [data, err] = await execute(values)
 
             if (err) {
+                if(JSON.parse(err?.data).captchaError){
+                    toast({
+                        variant: "destructive",
+                        title: "Failed to verify captcha.",
+                        description: "Reload and try again.",
+                    })
+                    return
+                }
+
                 toast({
                     variant: "destructive",
                     title: "Uh oh! Something went wrong.",
                     description: "There was a problem with the request.",
                 })
+                return
             }
 
             if (data?.exist && data != null) {
@@ -113,11 +107,16 @@ export const WaitingListForm = () => {
                         altText="Follow">Follow</ToastAction></Link>
                 })
             }
+
+            // reset state of form
+            resetCaptcha()
+            form.reset()
+
         }else{
             toast({
                 variant: "destructive",
-                title: "Failed to Verify Captcha",
-                description: "Try reloading the page.",
+                title: "Unusual behavior detected ⚠",
+                description: "Please verify that you are not a robot",
             })
         }
     }

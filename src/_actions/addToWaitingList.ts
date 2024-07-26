@@ -6,17 +6,27 @@ import { sendEmail } from "@/utils/resend";
 import prisma from "@/prisma"
 import WaitingListEmailTemplate from "@/emailTemplates/waitingList";
 import InternalEmailTemplate from "@/emailTemplates/internalMessages";
+import {verifyCaptchaAction} from "@/_actions/verifyCaptcha";
 
 export const addToWaitingList = createServerAction()
     .input(
         z.object({
             email: z.string().email(),
+            captchaToken : z.string()
         })
     )
     .handler(async ({ input }) => {
 
-        try{
+        const [isCaptchaValid, captchaError] = await verifyCaptchaAction({token:input.captchaToken})
 
+        if (!isCaptchaValid || captchaError) {
+            throw new ZSAError(
+                "FORBIDDEN",
+                {message: "Invalid captcha", captchaError: true},
+            )
+        }
+
+        try{
             const doesExist = await prisma.waitingList.findUnique({
                 where:{
                     email: input.email
@@ -49,7 +59,7 @@ export const addToWaitingList = createServerAction()
             })
             throw new ZSAError(
                 "INTERNAL_SERVER_ERROR",
-                err,
+                {...err, captchaError:false},
             )
         }
     })
