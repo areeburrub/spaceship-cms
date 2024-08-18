@@ -3,6 +3,7 @@
 import { createServerAction } from "zsa";
 import z from "zod";
 import { Resend } from 'resend';
+import React from "react";
 
 // Initialize the Resend client with the API key
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -10,10 +11,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // Define the Zod schema for the input
 const sendEmailPropsSchema = z.object({
     emails: z.array(z.string().email()),
-    content: z.custom<React.ReactNode>(
-        e => (e as any)?.$$typeof === Symbol.for("react.element"),
-        "value must be a React Element"
-    ),
+    content: z.custom<React.ReactNode>(),
     subject: z.string(),
 });
 
