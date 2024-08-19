@@ -139,6 +139,6 @@ export const logout = createServerAction()
             cookies().delete('spaceship-refresh-token');
 
         }catch (e){
-            console.error(e)
+            throw e
         }
     })

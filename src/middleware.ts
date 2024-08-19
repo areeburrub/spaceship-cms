@@ -16,36 +16,44 @@ export default async function middleware(req: NextRequest) {
     let session; // null variable to store session if tokens are valid
     const response = NextResponse.next()
 
-    // Attempt to decrypt the access token from the cookie
     const accessToken = cookies().get('spaceship-access-token')?.value;
-    session = await decryptAccessToken(accessToken);
-    if (!session?.userId) {
-        // If access token is invalid, attempt to use the refresh token
-        const refreshToken = cookies().get('spaceship-refresh-token')?.value;
-        if (refreshToken) {
-            const [newAccessToken, error] = await refreshAccessToken({refreshToken});
+    const refreshToken = cookies().get('spaceship-refresh-token')?.value;
 
-            if (newAccessToken?.accessToken) {
+    if (!!accessToken || !!refreshToken) {
+        // Attempt to decrypt the access token from the cookie
+        session = await decryptAccessToken(accessToken);
+        if (!session?.userId) {
+            // If access token is invalid, attempt to use the refresh token
+            if (refreshToken) {
+                const [newAccessToken, error] = await refreshAccessToken({refreshToken});
 
-                // await storeTokens({token:newAccessToken.accessToken, refresh_token:refreshToken})
+                // If any error occur refreshing the access token user will be asked to log in again
+                if(error){
+                    response.cookies.delete('spaceship-access-token')
+                    response.cookies.delete('spaceship-refresh-token')
+                }
 
-                response.cookies.set('spaceship-access-token', newAccessToken.accessToken, {
-                    httpOnly: true,
-                    sameSite: 'strict',
-                    expires: new Date(Date.now() + 10 * 1000), // 10 Seconds
-                    // secure: true,
-                });
+                if (newAccessToken?.accessToken) {
 
-                response.cookies.set('spaceship-refresh-token', refreshToken, {
-                    httpOnly: true,
-                    sameSite: 'strict',
-                    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 Days
-                    // secure: true,
-                });
+                    // await storeTokens({token:newAccessToken.accessToken, refresh_token:refreshToken})
 
-                // Decrypt the new access token
-                session = await decryptAccessToken(newAccessToken.accessToken);
+                    response.cookies.set('spaceship-access-token', newAccessToken.accessToken, {
+                        httpOnly: true,
+                        sameSite: 'strict',
+                        expires: new Date(Date.now() + 15 * 60 * 1000), // 10 Seconds
+                        // secure: true,
+                    });
 
+                    response.cookies.set('spaceship-refresh-token', refreshToken, {
+                        httpOnly: true,
+                        sameSite: 'strict',
+                        expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 Days
+                        // secure: true,
+                    });
+
+                    // Decrypt the new access token
+                    session = await decryptAccessToken(newAccessToken.accessToken);
+                }
             }
         }
     }

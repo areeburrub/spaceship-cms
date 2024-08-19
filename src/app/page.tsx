@@ -7,7 +7,9 @@ import { Github, FileText, Users, Layout, Rocket } from 'lucide-react';
 import Footer from "@/app/components/Footer";
 import {WaitingListForm} from "@/app/components/waitingListForm";
 
+
 export default function Home() {
+
     return (
         <main className="min-h-screen">
             <NavBar/>

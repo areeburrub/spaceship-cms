@@ -3,10 +3,11 @@
 import {createServerAction} from "zsa";
 import z from "zod";
 import {cookies} from "next/headers"
-import {decryptRefreshToken, encryptAccessToken} from "@/lib/session";
+import {decryptAccessToken, decryptRefreshToken, encryptAccessToken} from "@/lib/session";
 import prisma from "@/prisma";
 import {getSession} from "@/lib/redis";
 import {JWTPayload} from "jose";
+import {logout} from "@/_actions/auth";
 
 
 export const storeTokens = createServerAction()
@@ -21,7 +22,7 @@ export const storeTokens = createServerAction()
                 value: input.token,
                 httpOnly: true,
                 sameSite: "strict",
-                expires: new Date(Date.now() + 10 * 1000), // 10 Seconds
+                expires: new Date(Date.now() + 15 * 60 * 1000), // 15 Minute
                 secure: true,
 
             })
@@ -77,7 +78,6 @@ export const refreshAccessToken = createServerAction()
             };
         } catch (error) {
             console.error("Error refreshing access token:", error);
-            return { error: "Failed to refresh access token. Please log in again." };
+            throw error
         }
     });
-

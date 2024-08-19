@@ -1,6 +1,10 @@
+import {Button} from "@/components/ui/button";
+import {isUserLoggedIn} from "@/_data/user";
+import Link from "next/link";
 
+const NavBar = async () => {
+    const showDashboardBtn = await isUserLoggedIn();
 
-const NavBar = () => {
     return(
         <nav className="w-full py-6">
             <div className={"flex justify-between container items-center"}>
@@ -31,14 +35,28 @@ const NavBar = () => {
                     </div>
                 </a>
 
-                <div className={"hidden sm:flex gap-4"}>
-                    <a className={"hover:text-primary"} href={"#hero"}>Home</a>
-                    <a className={"hover:text-primary"} href={"#about"}>About</a>
-                    <a className={"hover:text-primary"} href={"#how-it-works"}>How it works?</a>
-                </div>
+                <div className={"flex items-center gap-4"}>
+                    {/*<a className={"hidden sm:block hover:text-primary"} href={"#hero"}>Home</a>*/}
+                    {/*<a className={"hidden sm:block hover:text-primary"} href={"#about"}>About</a>*/}
+                    {/*<a className={"hidden sm:block hover:text-primary"} href={"#how-it-works"}>How it works?</a>*/}
+                    {
+                        showDashboardBtn?
+                            <>
+                                <Link href={"/dashboard"}>
+                                    <Button variant={"default"} className={""}>Dashboard</Button>
+                                </Link>
+                            </>
+                            :
+                            <>
+                                <Link href={"/signup"}>
+                                    <Button variant={"secondary"} className={""}>Signup</Button>
+                                </Link>
 
-                <div className={"sm:hidden flex gap-4"}>
-                    <a className={"hover:text-primary"} href={"#how-it-works"}>How it works?</a>
+                                <Link href={"/login"}>
+                                    <Button variant={"default"} className={""}>Login</Button>
+                                </Link>
+                            </>
+                    }
                 </div>
 
             </div>
