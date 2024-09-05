@@ -7,9 +7,11 @@ import prisma from "@/prisma";
 import {comparePassword, hashPassword} from "@/utils/auth";
 import {encryptAccessToken, encryptRefreshToken} from "@/lib/session";
 import {storeTokens} from "@/_actions/token";
-import {revokeSession, saveSessionOnRedis} from "@/lib/redis";
-import { v4 as uuidv4 } from 'uuid';
+import {getUserIdByResetToken, revokeResetToken, revokeSession, saveResetToken, saveSessionOnRedis} from "@/lib/redis";
+import {v4 as uuidv4} from 'uuid';
 import {cookies} from "next/headers"
+import {sendEmail} from "@/utils/resend";
+import PasswordResetEmailTemplate from "@/emailTemplates/resetPassword";
 
 
 export const signup = createServerAction()
@@ -53,7 +55,6 @@ export const signup = createServerAction()
     });
 
 
-
 export const login = createServerAction()
     .input(
         z.object({
@@ -87,7 +88,7 @@ export const login = createServerAction()
         const sessionId = uuidv4();
 
         // Generate tokens using jose with different keys
-        const accessToken = await encryptAccessToken({userId:user.id});
+        const accessToken = await encryptAccessToken({userId: user.id});
         const refreshToken = await encryptRefreshToken({sessionId});
 
         // Create a new session
@@ -105,13 +106,13 @@ export const login = createServerAction()
         // Store the tokens as cookies
         await storeTokens({token: accessToken, refresh_token: refreshToken});
 
-        return {status:true};
+        return {status: true};
     });
 
 
 export const logout = createServerAction()
-    .handler(async ()=>{
-        try{
+    .handler(async () => {
+        try {
             // Get cookies
             const refreshToken = cookies().get('spaceship-refresh-token')?.value;
 
@@ -121,13 +122,13 @@ export const logout = createServerAction()
 
             // Find the session associated with the refresh token
             const session = await prisma.session.findUnique({
-                where: { refreshToken },
+                where: {refreshToken},
             });
 
             if (session) {
                 // Delete the session from the database
                 await prisma.session.delete({
-                    where: { id: session.id },
+                    where: {id: session.id},
                 });
 
                 // Delete the session from Redis
@@ -138,7 +139,116 @@ export const logout = createServerAction()
             cookies().delete('spaceship-access-token');
             cookies().delete('spaceship-refresh-token');
 
-        }catch (e){
+        } catch (e) {
             throw e
         }
     })
+
+export const isUsernameAvailable = createServerAction()
+    .input(z.object({
+        username: z.string().min(2).max(15)
+    }))
+    .output(
+        z.boolean()
+    )
+    .handler(async ({input}) => {
+        try {
+            const data = await prisma.user.findFirst({
+                where: {
+                    username: input.username
+                }
+            })
+
+            return data == null
+        } catch (e) {
+            throw e
+        }
+    })
+
+
+export const requestPasswordReset = createServerAction()
+    .input(
+        z.object({
+            email: z.string().email(),
+        })
+    )
+    .output(z.object({success: z.boolean()}))
+    .handler(async ({input}) => {
+        const {email} = input;
+
+        // Check if user exists
+        const user = await prisma.user.findFirst({where: {email}});
+        if (!user) {
+            throw new Error("User not found.");
+        }
+
+        // Generate reset token
+        const resetToken = uuidv4();
+
+        // Store reset token in Redis
+        await saveResetToken(resetToken, user.id);
+
+        // Generate reset link
+        const resetLink = `${process.env.PUBLIC_URL}/password-reset/${resetToken}`;
+        const revokeLink = `${process.env.PUBLIC_URL}/password-reset/${resetToken}/revoke`;
+
+        // Send reset email
+        await sendEmail({
+            emails: [email],
+            subject: "Password Reset Request - Spaceship CMS",
+            // @ts-ignore
+            content: PasswordResetEmailTemplate({resetLink, revokeLink}), // Use the email template
+        });
+
+        return {success: true};
+    });
+
+export const resetPassword = createServerAction()
+    .input(
+        z.object({
+            resetToken: z.string(),
+            newPassword: z.string().min(6),
+        })
+    )
+    .output(z.object({success: z.boolean()}))
+    .handler(async ({input}) => {
+        const {resetToken, newPassword} = input;
+
+        // Retrieve user ID from Redis using the reset token
+        const userId = await getUserIdByResetToken(resetToken);
+
+        if (!userId) {
+            throw new Error("Invalid or expired reset token.");
+        }
+
+        // Hash the new password
+        const hashedPassword = await hashPassword(newPassword);
+
+        // Update the user's password in the database
+        await prisma.user.update({
+            where: {id: userId},
+            data: {password: hashedPassword},
+        });
+
+        // Remove the reset token from Redis after successful reset
+        await revokeResetToken(resetToken);
+
+        return {success: true};
+    });
+
+export const revokePasswordResetToken = createServerAction()
+    .input(
+        z.object({
+            token: z.string(), // Token is required as input
+        })
+    )
+    .output(z.object({ success: z.boolean() })) // We only need to return success
+    .handler(async ({ input }) => {
+        try{
+            const { token } = input;
+            await revokeResetToken(token);
+            return { success: true };
+        }catch(e){
+            throw new Error("Error Occurred while revoke password reset token.");
+        }
+    });

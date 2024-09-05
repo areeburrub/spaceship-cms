@@ -9,3 +9,4 @@ export const getProfile = async () =>{
     const user = await getUser();
     return user;
 }
+

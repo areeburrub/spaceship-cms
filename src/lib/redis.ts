@@ -62,3 +62,45 @@ export const revokeSession = async (sessionId: string): Promise<boolean> => {
         return false;
     }
 };
+
+export const saveResetToken = async (resetToken: string, userId: string) => {
+    try {
+        // Store reset token with userId
+        await redisClient.set(resetToken, userId);
+
+        // Set expiration for the reset token (1 hour in seconds)
+        await redisClient.expire(resetToken, 60 * 60);
+
+        console.log(`Reset token stored for user: ${userId}`);
+    } catch (error) {
+        console.error('Error saving reset token on Redis:', error);
+        throw new Error('Failed to store reset token');
+    }
+};
+
+
+export const getUserIdByResetToken = async (resetToken: string): Promise<string | null> => {
+    try {
+        const userId = await redisClient.get(resetToken);
+
+        if (!userId) {
+            return null; // Token not found or expired
+        }
+
+        return userId.toString();
+    } catch (error) {
+        console.error('Error retrieving reset token from Redis:', error);
+        return null;
+    }
+};
+
+export const revokeResetToken = async (resetToken: string): Promise<boolean> => {
+    try {
+        const result = await redisClient.del(resetToken);
+        return result > 0; // Returns true if the token was deleted, false otherwise
+    } catch (error) {
+        console.error('Error revoking reset token from Redis:', error);
+        return false;
+    }
+};
+

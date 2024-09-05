@@ -1,86 +1,149 @@
 "use client"
 
-import { useState } from "react";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {signup} from "@/_actions/auth";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {signup, isUsernameAvailable} from "@/_actions/auth";
+
+import { MoveRight, Loader2 } from "lucide-react"
 
 import { useRouter } from "next/navigation";
+
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+
+const signupFormSchema = z.object({
+    email: z.string().email(),
+    username: z.string()
+            .min(3, { message: "Username must be at least 3 characters long" })
+            .max(20, { message: "Username must not exceed 20 characters" })
+            .regex(/^[a-zA-Z0-9_]+$/, { message: "Username can only contain letters, numbers, and underscores" })
+            .refine(async (username)=>{
+                const [isAvailable, error] = await isUsernameAvailable({username});
+                return isAvailable;
+            },"Username already taken"),
+    password: z.string().min(8).max(50),
+})
+
+import {
+    Form,
+    FormControl,
+    FormDescription,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form";
+
+import {PasswordInput} from "./password-input";
+import {NewUsernameInput} from "@/app/(auth)/components/new-user-input";
+
+
 
 export function SignupForm() {
 
     const router = useRouter();
 
-    const [email, setEmail] = useState("");
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
+    const form = useForm<z.infer<typeof signupFormSchema>>({
+        resolver: zodResolver(signupFormSchema),
+        defaultValues: {
+            email: "",
+            username: "",
+            password: ""
+        },
+    })
 
-    const handleSignup = async (e: React.FormEvent) => {
-        e.preventDefault();
-        console.log("Signing up with:", email, username, password);
+    const onSubmit = async (values: z.infer<typeof signupFormSchema>) => {
+
+        const { email, username, password } = values;
 
         try {
-            await signup({ email, username, password });
-            router.push("/dashboard"); // Redirect to dashboard after signup
+            const [user, error] = await signup({ email, username, password });
+            if(!error){
+                router.push("/dashboard"); // Redirect to dashboard after signup
+            }else{
+                throw error
+            }
         } catch (error) {
             console.error("Signup Error: ", error);
         }
     };
 
     return (
-        <Card className="mx-auto max-w-sm">
+        <Card className="mx-auto max-w-md w-full">
             <CardHeader>
-                <CardTitle className="text-2xl">Sign Up</CardTitle>
+                <img className={"w-32"} src={"/logo.png"} alt="logo" />
+                <CardTitle className="text-2xl font-bold">Create a Spaceship account</CardTitle>
                 <CardDescription>
-                    Create a new account by entering your details below
+                    One step away from seamless content management
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSignup} className="grid gap-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                            id="email"
-                            type="email"
-                            placeholder="m@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
+                <Form {...form}>
+                    <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4">
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Email</FormLabel>
+                                    <FormControl>
+                                        <Input placeholder="jhon@gmail.com" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="username">Username</Label>
-                        <Input
-                            id="username"
-                            type="text"
-                            placeholder="Your username"
-                            value={username}
-                            onChange={(e) => setUsername(e.target.value)}
-                            required
+
+                        <FormField
+                            control={form.control}
+                            name="username"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Username</FormLabel>
+                                    <FormControl>
+                                        <NewUsernameInput placeholder="jhondeo" {...field} />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
-                        <Input
-                            id="password"
-                            type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
-                            required
+
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Password</FormLabel>
+                                    <FormControl>
+                                        <PasswordInput
+                                            placeholder={"••••••••••••••"}
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormDescription>
+                                        Your password must be at least 8 characters, and can’t begin or end with a space.
+                                    </FormDescription>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
                         />
-                    </div>
-                    <Button type="submit" className="w-full">
-                        Sign Up
-                    </Button>
+
+                        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                            {form.formState.isSubmitting && (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> // Spinner next to the button
+                            )}
+                            Sign Up
+                        </Button>
                 </form>
-                <div className="mt-4 text-center text-sm">
-                    Already have an account?{" "}
-                    <Link href="/login" className="underline">
-                        Login
+                </Form>
+                <div className="mt-4 text-sm flex justify-center gap-2 items-center">
+                    Already have a Spaceship account?{" "}
+                    <Link href="/login" className="text-blue-500">
+                        <div className={"flex gap-1 items-center font-bold"}>Log in<MoveRight className={"mt-0.5"} /></div>
                     </Link>
                 </div>
             </CardContent>

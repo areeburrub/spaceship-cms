@@ -36,7 +36,7 @@ const WaitingListEmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
                         <div className="flex flex-row items-center justify-between pb-2">
                             <Link href="https://spaceship-cms.co" className="text-orange-500 underline">
                                 <img alt={"Spaceship CMS Logo"} src="https://spaceship-cms.co/logo.png" className="h-14 rounded-lg" itemProp="Spaceship CMS Logo"
-                                 title="Spaceship CMS Logo"/>
+                                     title="Spaceship CMS Logo"/>
                             </Link>
                         </div>
                         <Hr/>
@@ -61,7 +61,7 @@ const WaitingListEmailTemplate: React.FC<Readonly<EmailTemplateProps>> = ({
                         <Hr/>
                         <p className="text-gray-700 pt-2">
                             Follow me on 𝕏 : <Link href="https://twitter.com/areeburrub"
-                                                className="text-orange-500 underline">@areeburrub</Link>
+                                                   className="text-orange-500 underline">@areeburrub</Link>
                         </p>
 
                     </div>
