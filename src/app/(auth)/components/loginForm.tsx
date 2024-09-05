@@ -2,18 +2,16 @@
 
 import { useState } from "react";
 import Link from "next/link";
-
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/_actions/auth";
-
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {Loader2, MoveRight} from "lucide-react";
+import {Loader2, MoveRight, CheckCircle} from "lucide-react";
 
 import {
     Form,
@@ -23,7 +21,7 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import {PasswordInput} from "@/app/(auth)/components/password-input";
+import { PasswordInput } from "@/app/(auth)/components/password-input";
 
 // Define schema for the login form using zod
 const loginFormSchema = z.object({
@@ -33,6 +31,8 @@ const loginFormSchema = z.object({
 
 export function LoginForm() {
     const router = useRouter();
+    const [loginError, setLoginError] = useState<string | null>(null);
+    const [loginSuccess, setLoginSuccess] = useState(false);
 
     const form = useForm<z.infer<typeof loginFormSchema>>({
         resolver: zodResolver(loginFormSchema),
@@ -44,13 +44,21 @@ export function LoginForm() {
 
     const onSubmit = async (values: z.infer<typeof loginFormSchema>) => {
         const { identifier, password } = values;
+        setLoginError(null); // Reset error state
+        setLoginSuccess(false); // Reset success state
 
         try {
-            const tokens = await login({ identifier, password });
-            console.info(tokens);
-            router.push("/dashboard"); // Redirect to dashboard after login
-        } catch (error) {
-            console.error("Login Error: ", error);
+            // Destructure tokens and error from login response
+            const [tokens, error] = await login({ identifier, password });
+
+            if (error) {
+                setLoginError(error.message); // Set the error message from the response
+            } else if (tokens) {
+                setLoginSuccess(true); // Set success state
+                router.push("/dashboard");
+            }
+        } catch (err) {
+            setLoginError("An unexpected error occurred. Please try again."); // Handle unexpected errors
         }
     };
 
@@ -102,14 +110,29 @@ export function LoginForm() {
                             )}
                         />
 
-                        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
+                        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || loginSuccess}>
                             {form.formState.isSubmitting && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> // Spinner next to the button
                             )}
-                            Log in
+                            {loginSuccess ? (
+                                <>
+                                    <CheckCircle className="mr-2 h-4 w-4" />
+                                    Logging you in...
+                                </>
+                            ) : (
+                                "Log in"
+                            )}
                         </Button>
                     </form>
                 </Form>
+
+                {/* Display error message if login fails */}
+                {loginError && (
+                    <div className="text-red-500 text-sm mt-2 text-center">
+                        {loginError}
+                    </div>
+                )}
+
                 <div className="mt-4 text-sm flex justify-center gap-2 items-center">
                     New to Spaceship CMS?{" "}
                     <Link href="/signup" className="text-blue-500">

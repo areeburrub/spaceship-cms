@@ -187,11 +187,11 @@ export default async function Dashboard() {
                             <DropdownMenuItem>Settings</DropdownMenuItem>
                             <DropdownMenuItem>Support</DropdownMenuItem>
                             <DropdownMenuSeparator/>
+                            <Link href={"/logout"}>
                             <DropdownMenuItem>
-                                <Link href={"/logout"}>
-                                    Logout
-                                </Link>
+                                Logout
                             </DropdownMenuItem>
+                            </Link>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

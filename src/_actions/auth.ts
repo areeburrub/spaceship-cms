@@ -80,6 +80,11 @@ export const login = createServerAction()
             },
         });
 
+
+        if (!user) {
+            throw new Error("No such user exists.");
+        }
+
         if (!user || !(await comparePassword(password, user.password))) {
             throw new Error("Invalid credentials.");
         }
