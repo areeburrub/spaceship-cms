@@ -21,11 +21,11 @@ import {
 } from "@/components/ui/dropdown-menu"
 import {Input} from "@/components/ui/input"
 import {Sheet, SheetContent, SheetTrigger} from "@/components/ui/sheet"
-import {getProfile} from "@/_data/user";
+import {getUser_Profile} from "@/_data/user";
 
 export default async function Dashboard() {
 
-    const user = await getProfile()
+    const user = await getUser_Profile()
 
     return (
         <div className="flex min-h-screen w-full flex-col">

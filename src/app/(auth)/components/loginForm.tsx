@@ -55,7 +55,7 @@ export function LoginForm() {
                 setLoginError(error.message); // Set the error message from the response
             } else if (tokens) {
                 setLoginSuccess(true); // Set success state
-                router.push("/dashboard");
+                router.push("/site/selector");
             }
         } catch (err) {
             setLoginError("An unexpected error occurred. Please try again."); // Handle unexpected errors
@@ -110,7 +110,7 @@ export function LoginForm() {
                             )}
                         />
 
-                        <Button type="submit" className="w-full" disabled={form.formState.isSubmitting || loginSuccess}>
+                        <Button type="submit" className="w-full flex felx-row items-center" disabled={form.formState.isSubmitting || loginSuccess}>
                             {form.formState.isSubmitting && (
                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" /> // Spinner next to the button
                             )}

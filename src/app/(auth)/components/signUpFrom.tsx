@@ -63,7 +63,7 @@ export function SignupForm() {
         try {
             const [user, error] = await signup({ email, username, password });
             if(!error){
-                router.push("/dashboard"); // Redirect to dashboard after signup
+                router.push("/site/selector"); // Redirect to dashboard after signup
             }else{
                 throw error
             }

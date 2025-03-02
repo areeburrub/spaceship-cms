@@ -4,7 +4,7 @@ import {cookies} from 'next/headers';
 import {refreshAccessToken} from "@/_actions/token";
 
 // Specify protected and public routes
-const protectedRoutes = ['/dashboard'];
+const protectedRoutes = ['/dashboard','/site-selector','/site'];
 const publicRoutes = ['/login', '/signup', '/'];
 
 export default async function middleware(req: NextRequest) {
